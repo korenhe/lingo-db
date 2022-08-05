@@ -1,0 +1,39 @@
+default:
+   retry:
+      max: 2 # two retries maximum, three runs in total
+      when:
+         - runner_system_failure
+
+# Remove duplicate work for branches with open merge requests
+# Based on https://docs.gitlab.com/ee/ci/yaml/workflow.html#switch-between-branch-pipelines-and-merge-request-pipelines
+workflow:
+   rules:
+      -  if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      -  if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+         when: never
+      -  if: '$CI_COMMIT_BRANCH'
+
+#---------------------------------------------------------------------------
+# Build Jobs
+#---------------------------------------------------------------------------
+.build:
+   before_script:
+      - rm -rf /build/lingodb
+   tags:
+      - "lingodb-builder"
+
+build_debug:
+   extends: .build
+   script:
+      - export VIRTUAL_ENV=/opt/venv
+      - export PATH="$VIRTUAL_ENV/bin:$PATH"
+      - git submodule init
+      - git submodule update tools/python/pybind11
+      - rm -r arrow torch-mlir
+      - cp -r /arrow-src/arrow arrow
+      - cp -r /llvm-src/torch-mlir torch-mlir
+      - mkdir /build/lingodb
+      - git submodule update tools/python/pybind11
+      - cmake -G Ninja . -B /build/lingodb -DMLIR_DIR=/build/llvm/lib/cmake/mlir -DLLVM_EXTERNAL_LIT=/build/llvm/bin/llvm-lit -DArrow_DIR="/build/arrow/install/lib/cmake/arrow"  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release
+      - cmake --build /build/lingodb -j$(nproc)
+
