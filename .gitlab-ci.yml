@@ -34,6 +34,14 @@ build_debug:
       - cp -r /llvm-src/torch-mlir torch-mlir
       - mkdir /build/lingodb
       - git submodule update tools/python/pybind11
-      - cmake -G Ninja . -B /build/lingodb -DMLIR_DIR=/build/llvm/lib/cmake/mlir -DLLVM_EXTERNAL_LIT=/build/llvm/bin/llvm-lit -DArrow_DIR="/build/arrow/install/lib/cmake/arrow"  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release
+      - cmake -G Ninja . -B /build/lingodb -DMLIR_DIR=/build/llvm/lib/cmake/mlir -DLLVM_EXTERNAL_LIT=/build/llvm/bin/llvm-lit -DArrow_DIR="/build/arrow/install/lib/cmake/arrow"  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
       - cmake --build /build/lingodb -j$(nproc)
+      - cd /build/lingodb
+      - tar -I pigz -cvf lingodb_debug.tar.gz mlir-db-opt run-sql run-mlir sql sqlite-tester pymlirdbext.cpython-310-x86_64-linux-gnu.so
+   artifacts:
+      paths:
+         - ./pkg/lingodb_debug.tar.gz
+      expire_in: 1 hrs
+
+
 
