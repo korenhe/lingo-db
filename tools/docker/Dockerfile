@@ -1,6 +1,6 @@
 ARG buildImage="buildimg"
 ARG builtImage="lingodb"
-FROM ubuntu:impish AS baseimg
+FROM ubuntu:22.04 AS baseimg
 RUN apt-get update
 RUN DEBIAN_FRONTEND="noninteractive" apt-get -y install tzdata
 RUN apt-get -y install python3-pip python3-venv
@@ -19,7 +19,7 @@ RUN apt-get -y install autoconf flex bison libjemalloc-dev libboost-dev \
                                  libboost-filesystem-dev \
                                  libboost-system-dev \
                                  libboost-regex-dev \
-                                 python-dev libssl-dev
+                                 python3-dev libssl-dev
 COPY . /arrow-src
 WORKDIR /arrow-src
 RUN git submodule init
@@ -74,7 +74,12 @@ COPY --from=buildllvm /build/llvm/include /build/llvm/include
 COPY --from=buildllvm /build/llvm/tools/mlir/include /build/llvm/tools/mlir/include
 COPY --from=buildllvm /build/llvm/tools/clang/include /build/llvm/tools/clang/include
 
+FROM ${buildImage} AS lingo_lint
 
+RUN set -ex; \
+    apt-get update && \
+    apt-get install -y clang-14 clangd-14 clang-format-14 clang-tidy-14 && \
+    rm -rf /var/lib/apt/lists/*
 
 
 FROM ${buildImage} AS lingodb
