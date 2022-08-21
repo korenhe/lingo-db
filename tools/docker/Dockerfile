@@ -7,9 +7,9 @@ RUN apt-get -y install python3-pip python3-venv
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-RUN pip3 install numpy
-RUN pip3 install Cython
-RUN pip3 install requests moz_sql_parser numpy pandas pyarrow
+RUN pip3 install numpy -i https://pypi.douban.com/simple/
+RUN pip3 install Cython -i https://pypi.douban.com/simple/
+RUN pip3 install requests moz_sql_parser numpy pandas pyarrow -i https://pypi.douban.com/simple/
 RUN apt-get install -y git cmake  ninja-build wget unzip
 RUN mkdir /dbgen
 
@@ -37,7 +37,7 @@ WORKDIR /llvm-src
 RUN git submodule init
 RUN git submodule update llvm-project
 RUN git submodule update torch-mlir
-RUN python -m pip install -r torch-mlir/requirements.txt
+RUN python3 -m pip install -r torch-mlir/requirements.txt -i https://pypi.douban.com/simple/
 
 RUN mkdir -p /build/llvm
 
